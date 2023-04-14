@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import CreatePost from "./pages/CreatePost";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase-config";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isAuth, setIsAuth] = useState(localStorage.getItem("isAuth"));
+
+  const signUserOut = () => {
+    signOut(auth).then(() => {
+      localStorage.clear();
+      setIsAuth(false);
+      window.location.pathname = "/login";
+    });
+  };
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+    <Router>
+      <nav>
+        <Link className="links" to="/">
+          Home
+        </Link>
+
+        {!isAuth ? (
+          <Link className="links" to="/login">
+            Login
+          </Link>
+        ) : (
+          <>
+            <Link className="links" to="/createpost">
+              Create Post
+            </Link>
+            <button className="links" onClick={signUserOut}>
+              Log Out
+            </button>
+          </>
+        )}
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home isAuth={isAuth}/>} />
+        <Route path="/createpost" element={<CreatePost isAuth={isAuth}/>} />
+        <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
